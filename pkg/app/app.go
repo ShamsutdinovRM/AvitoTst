@@ -2,16 +2,28 @@ package app
 
 import (
 	"AvitoTst/pkg/handler"
+	"AvitoTst/pkg/repository"
+	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 )
 
 func Run() {
+	db, err := repository.New()
+	if err != nil {
+		fmt.Printf("Error create DB connection: %s", err)
+		return
+	}
+	defer db.DB.Close()
+
+	hand := handler.Repos{Repository: db}
+
 	r := mux.NewRouter()
-	r.HandleFunc("/deposit", handler.HomeHandler)
-	r.HandleFunc("/writeOff", handler.HomeHandler)
-	r.HandleFunc("/transfer", handler.HomeHandler)
-	r.HandleFunc("/getBalance", handler.HomeHandler)
+	r.HandleFunc("/deposit", hand.Deposit)
+	r.HandleFunc("/writeOff", hand.WriteOff)
+	r.HandleFunc("/transfer", hand.Transfer)
+	r.HandleFunc("/getBalance", hand.GetBalance)
 	//http.Handle("/", r)
-	http.ListenAndServe(":8080", r)
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
