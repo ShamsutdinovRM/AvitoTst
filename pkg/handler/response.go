@@ -87,6 +87,13 @@ func (b *Repos) GetBalance(w http.ResponseWriter, r *http.Request) {
 	if err = json.Unmarshal(body, &dep); err != nil {
 		fmt.Printf("Error unmarshal body: %s", err)
 	}
+
+	balance, err := b.Repository.GetBalanceById(dep)
+	if err != nil {
+		SendErr(w, http.StatusBadRequest, err.Error())
+	}
+
+	SendOK(w, http.StatusOK, balance)
 }
 
 func SendErr(w http.ResponseWriter, code int, text string) {

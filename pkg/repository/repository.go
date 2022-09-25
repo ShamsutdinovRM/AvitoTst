@@ -43,17 +43,12 @@ func (db *DBModel) DepositMoney(body model.User) (model.User, error) {
 		return model.User{}, fmt.Errorf("error deposit money: %s", err)
 	}
 
-	rowUser, err := db.DB.Query("SELECT balance FROM users WHERE id=$1", body.Id)
+	actual, err := db.GetBalanceById(body)
 	if err != nil {
-		return model.User{}, fmt.Errorf("error check new balance: %s", err)
+		return model.User{}, err
 	}
 
-	var newBalance model.User
-	for rowUser.Next() {
-		rowUser.Scan(&newBalance.Balance)
-	}
-	newBalance.Id = body.Id
-	return newBalance, nil
+	return actual, nil
 }
 
 func (db *DBModel) WriteOffMoney(body model.User) (model.User, error) {
@@ -62,12 +57,41 @@ func (db *DBModel) WriteOffMoney(body model.User) (model.User, error) {
 		return model.User{}, fmt.Errorf("value less than zero: %s", body.Balance)
 	}
 
-	return model.User{}, nil
+	actual, err := db.GetBalanceById(body)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	if actual.Balance-body.Balance < 0.0 {
+		return model.User{}, fmt.Errorf("insufficient funds in the account, current balance: %s", actual.Balance)
+	}
+
+	_, err = db.DB.Exec("UPDATE users SET balance = balance - $1 WHERE id = $2", body.Balance, body.Id)
+	if err != nil {
+		return model.User{}, fmt.Errorf("error write off money: %s", err)
+	}
+
+	actual, err = db.GetBalanceById(body)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return actual, nil
 }
 
 func (db *DBModel) TransferMoney(body model.Transfer) (model.Users, error) {
 	return model.Users{}, nil
 }
+
 func (db *DBModel) GetBalanceById(body model.User) (model.User, error) {
-	return model.User{}, nil
+
+	rowUser := db.DB.QueryRow("SELECT balance FROM users WHERE id=$1", body.Id)
+
+	var currentBalance model.User
+	err := rowUser.Scan(&currentBalance.Id, &currentBalance.Balance)
+	if err != nil {
+		return model.User{}, fmt.Errorf("error take balance: %s", err)
+	}
+
+	return currentBalance, nil
 }
