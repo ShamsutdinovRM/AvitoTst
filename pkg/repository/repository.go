@@ -80,7 +80,28 @@ func (db *DBModel) WriteOffMoney(body model.User) (model.User, error) {
 }
 
 func (db *DBModel) TransferMoney(body model.Transfer) (model.Users, error) {
-	return model.Users{}, nil
+
+	var actualUserWO model.User
+	actualUserWO, err := db.GetBalanceById(model.User{Id: body.UserWO})
+	if err != nil {
+		return model.Users{}, err
+	}
+
+	if actualUserWO.Balance < body.Balance {
+		return model.Users{}, fmt.Errorf("insufficient funds in the write off account, check your balance")
+	}
+
+	_, err = db.WriteOffMoney(model.User{Id: body.UserWO, Balance: body.Balance})
+	if err != nil {
+		return model.Users{}, err
+	}
+
+	_, err = db.DepositMoney(model.User{Id: body.UserDep, Balance: body.Balance})
+	if err != nil {
+		return model.Users{}, err
+	}
+
+	return model.Users{UserWO: body.UserWO, UserDep: body.UserDep, Status: "Ok"}, nil
 }
 
 func (db *DBModel) GetBalanceById(body model.User) (model.User, error) {

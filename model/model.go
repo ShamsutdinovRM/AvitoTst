@@ -6,14 +6,15 @@ type User struct {
 }
 
 type Transfer struct {
-	UserWO  string `json:"userwo"`
-	UserDep string `json:"userdep"`
-	Balance string `json:"balance"`
+	UserWO  string  `json:"userwo"`
+	UserDep string  `json:"userdep"`
+	Balance float64 `json:"balance"`
 }
 
 type Users struct {
 	UserWO  string `json:"userwo"`
 	UserDep string `json:"userdep"`
+	Status  string `json:"status"`
 }
 
 type DefaultError struct {
