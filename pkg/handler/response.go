@@ -73,6 +73,13 @@ func (b *Repos) Transfer(w http.ResponseWriter, r *http.Request) {
 	if err = json.Unmarshal(body, &dep); err != nil {
 		fmt.Printf("Error unmarshal body: %s", err)
 	}
+
+	balance, err := b.Repository.TransferMoney(dep)
+	if err != nil {
+		SendErr(w, http.StatusBadRequest, err.Error())
+	}
+
+	SendOK(w, http.StatusOK, balance)
 }
 
 func (b *Repos) GetBalance(w http.ResponseWriter, r *http.Request) {
