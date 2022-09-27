@@ -31,10 +31,10 @@ func (b *Repos) Deposit(w http.ResponseWriter, r *http.Request) {
 	balance, err := b.Repository.DepositMoney(dep)
 	if err != nil {
 		SendErr(w, http.StatusBadRequest, err.Error())
-	} else {
-		SendOK(w, http.StatusOK, balance)
+		return
 	}
 
+	SendOK(w, http.StatusOK, balance)
 }
 
 func (b *Repos) WriteOff(w http.ResponseWriter, r *http.Request) {
@@ -55,10 +55,10 @@ func (b *Repos) WriteOff(w http.ResponseWriter, r *http.Request) {
 	balance, err := b.Repository.WriteOffMoney(dep)
 	if err != nil {
 		SendErr(w, http.StatusBadRequest, err.Error())
-	} else {
-		SendOK(w, http.StatusOK, balance)
+		return
 	}
 
+	SendOK(w, http.StatusOK, balance)
 }
 
 func (b *Repos) Transfer(w http.ResponseWriter, r *http.Request) {
@@ -79,9 +79,10 @@ func (b *Repos) Transfer(w http.ResponseWriter, r *http.Request) {
 	balance, err := b.Repository.TransferMoney(dep)
 	if err != nil {
 		SendErr(w, http.StatusBadRequest, err.Error())
-	} else {
-		SendOK(w, http.StatusOK, balance)
+		return
 	}
+
+	SendOK(w, http.StatusOK, balance)
 }
 
 func (b *Repos) GetBalance(w http.ResponseWriter, r *http.Request) {
@@ -102,9 +103,10 @@ func (b *Repos) GetBalance(w http.ResponseWriter, r *http.Request) {
 	balance, err := b.Repository.GetBalanceById(dep)
 	if err != nil {
 		SendErr(w, http.StatusBadRequest, err.Error())
-	} else {
-		SendOK(w, http.StatusOK, balance)
+		return
 	}
+
+	SendOK(w, http.StatusOK, balance)
 }
 
 // api key s9kgW7F9oXVJN9lck8PoKzs4rkhb1Nf2
@@ -112,6 +114,7 @@ func (b *Repos) GetBalanceWithCurrency(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("Error read body: %s\n", err)
+		SendErr(w, http.StatusBadRequest, "Invalid field")
 		return
 	}
 	defer r.Body.Close()
@@ -137,9 +140,9 @@ func (b *Repos) GetBalanceWithCurrency(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		SendErr(w, http.StatusBadRequest, err.Error())
 		return
-	} else {
-		SendOK(w, http.StatusOK, curReturn)
 	}
+
+	SendOK(w, http.StatusOK, curReturn)
 }
 
 func ChangeCurrency(dep model.BalanceCur) (model.BalanceCur, error) {
@@ -148,7 +151,7 @@ func ChangeCurrency(dep model.BalanceCur) (model.BalanceCur, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		fmt.Printf("Error unmarshal body: %s\n", err)
+		fmt.Printf("Error request: %s\n", err)
 		return model.BalanceCur{}, err
 	}
 
@@ -156,7 +159,7 @@ func ChangeCurrency(dep model.BalanceCur) (model.BalanceCur, error) {
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("Error do request: %s\n", err)
+		fmt.Printf("Error Do request: %s\n", err)
 		return model.BalanceCur{}, err
 	}
 
@@ -179,6 +182,7 @@ func ChangeCurrency(dep model.BalanceCur) (model.BalanceCur, error) {
 		Currency: dep.Currency,
 		Balance:  cur.Result,
 	}
+
 	return repCur, nil
 }
 
