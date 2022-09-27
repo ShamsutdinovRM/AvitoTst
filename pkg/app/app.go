@@ -24,6 +24,6 @@ func Run() {
 	r.HandleFunc("/writeOff", hand.WriteOff)
 	r.HandleFunc("/transfer", hand.Transfer)
 	r.HandleFunc("/getBalance", hand.GetBalance)
-	//http.Handle("/", r)
+	r.HandleFunc("/getBalanceCurrency", hand.GetBalanceWithCurrency)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

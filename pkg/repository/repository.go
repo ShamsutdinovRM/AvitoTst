@@ -12,7 +12,7 @@ type Operations interface {
 	DepositMoney(body model.User) (model.User, error)
 	WriteOffMoney(body model.User) (model.User, error)
 	TransferMoney(body model.Transfer) (model.Users, error)
-	GetBalanceById(body model.User) (model.User, error)
+	GetBalanceById(body model.Id) (model.User, error)
 }
 
 type DBModel struct {
@@ -36,14 +36,20 @@ func New() (*DBModel, error) {
 func (db *DBModel) DepositMoney(body model.User) (model.User, error) {
 
 	if body.Balance < 0.0 {
-		return model.User{}, fmt.Errorf("value less than zero: %s", body.Balance)
+		return model.User{}, fmt.Errorf("value less than zero: %f", body.Balance)
 	}
-	_, err := db.DB.Exec("UPDATE users SET balance = balance + $1 WHERE id = $2", body.Balance, body.Id)
+
+	actual, err := db.GetBalanceById(model.Id{Id: body.Id})
+	if err != nil {
+		return model.User{}, err
+	}
+
+	_, err = db.DB.Exec("UPDATE users SET balance = balance + $1 WHERE id = $2", body.Balance, body.Id)
 	if err != nil {
 		return model.User{}, fmt.Errorf("error deposit money: %s", err)
 	}
 
-	actual, err := db.GetBalanceById(body)
+	actual, err = db.GetBalanceById(model.Id{Id: body.Id})
 	if err != nil {
 		return model.User{}, err
 	}
@@ -54,16 +60,16 @@ func (db *DBModel) DepositMoney(body model.User) (model.User, error) {
 func (db *DBModel) WriteOffMoney(body model.User) (model.User, error) {
 
 	if body.Balance < 0.0 {
-		return model.User{}, fmt.Errorf("value less than zero: %s", body.Balance)
+		return model.User{}, fmt.Errorf("value less than zero: %f", body.Balance)
 	}
 
-	actual, err := db.GetBalanceById(body)
+	actual, err := db.GetBalanceById(model.Id{Id: body.Id})
 	if err != nil {
 		return model.User{}, err
 	}
 
 	if actual.Balance-body.Balance < 0.0 {
-		return model.User{}, fmt.Errorf("insufficient funds in the account, current balance: %s", actual.Balance)
+		return model.User{}, fmt.Errorf("insufficient funds in the account, current balance: %f", actual.Balance)
 	}
 
 	_, err = db.DB.Exec("UPDATE users SET balance = balance - $1 WHERE id = $2", body.Balance, body.Id)
@@ -71,7 +77,7 @@ func (db *DBModel) WriteOffMoney(body model.User) (model.User, error) {
 		return model.User{}, fmt.Errorf("error write off money: %s", err)
 	}
 
-	actual, err = db.GetBalanceById(body)
+	actual, err = db.GetBalanceById(model.Id{Id: body.Id})
 	if err != nil {
 		return model.User{}, err
 	}
@@ -82,7 +88,7 @@ func (db *DBModel) WriteOffMoney(body model.User) (model.User, error) {
 func (db *DBModel) TransferMoney(body model.Transfer) (model.Users, error) {
 
 	var actualUserWO model.User
-	actualUserWO, err := db.GetBalanceById(model.User{Id: body.UserWO})
+	actualUserWO, err := db.GetBalanceById(model.Id{Id: body.UserWO})
 	if err != nil {
 		return model.Users{}, err
 	}
@@ -104,15 +110,29 @@ func (db *DBModel) TransferMoney(body model.Transfer) (model.Users, error) {
 	return model.Users{UserWO: body.UserWO, UserDep: body.UserDep, Status: "Ok"}, nil
 }
 
-func (db *DBModel) GetBalanceById(body model.User) (model.User, error) {
+func (db *DBModel) GetBalanceById(body model.Id) (model.User, error) {
 
-	rowUser := db.DB.QueryRow("SELECT balance FROM users WHERE id=$1", body.Id)
+	rowUser := db.DB.QueryRow("SELECT balance FROM users WHERE id=$1 AND balance IS NOT NULL", body.Id)
 
 	var currentBalance model.User
-	err := rowUser.Scan(&currentBalance.Id, &currentBalance.Balance)
+	err := rowUser.Scan(&currentBalance.Balance)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return model.User{}, fmt.Errorf("error take balance: %s", err)
+		}
+
+		_, err = db.DB.Exec("UPDATE users SET balance = 0 WHERE id = $1", body.Id)
+		if err != nil {
+			return model.User{}, fmt.Errorf("error create balance: %s", err)
+		}
+	}
+
+	rowUser = db.DB.QueryRow("SELECT balance FROM users WHERE id=$1", body.Id)
+
+	err = rowUser.Scan(&currentBalance.Balance)
 	if err != nil {
 		return model.User{}, fmt.Errorf("error take balance: %s", err)
 	}
-
+	currentBalance.Id = body.Id
 	return currentBalance, nil
 }
