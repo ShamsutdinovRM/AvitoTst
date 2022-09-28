@@ -51,6 +51,16 @@ type Id struct {
 	Id string `json:"id"`
 }
 
+type DB struct {
+	Username string `json:"username"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	DBName   string `json:"dbname"`
+	SSLMode  string `json:"sslmode"`
+	Schema   string `json:"schema"`
+	Password string `json:"password"`
+}
+
 type DefaultError struct {
 	Text string `json:"text"`
 }

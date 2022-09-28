@@ -19,8 +19,7 @@ type DBModel struct {
 	DB *sql.DB
 }
 
-func New() (*DBModel, error) {
-	connStr := "user=dev password=dev dbname=postgres sslmode=disable"
+func New(connStr string) (*DBModel, error) {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		fmt.Printf("Error open DB: %s", err)

@@ -109,7 +109,7 @@ func (b *Repos) GetBalance(w http.ResponseWriter, r *http.Request) {
 	SendOK(w, http.StatusOK, balance)
 }
 
-// api key s9kgW7F9oXVJN9lck8PoKzs4rkhb1Nf2
+// GetBalanceWithCurrency api key vVu2MMIFiJf2AKMd0Zx5RdUx774A5l0O
 func (b *Repos) GetBalanceWithCurrency(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -117,6 +117,7 @@ func (b *Repos) GetBalanceWithCurrency(w http.ResponseWriter, r *http.Request) {
 		SendErr(w, http.StatusBadRequest, "Invalid field")
 		return
 	}
+
 	defer r.Body.Close()
 
 	var req model.BalanceReq
@@ -155,7 +156,7 @@ func ChangeCurrency(dep model.BalanceCur) (model.BalanceCur, error) {
 		return model.BalanceCur{}, err
 	}
 
-	req.Header.Set("apikey", "s9kgW7F9oXVJN9lck8PoKzs4rkhb1Nf2")
+	req.Header.Set("apikey", "vVu2MMIFiJf2AKMd0Zx5RdUx774A5l0O")
 
 	res, err := client.Do(req)
 	if err != nil {
