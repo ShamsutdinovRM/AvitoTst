@@ -128,6 +128,10 @@ func (b *Repos) GetBalanceWithCurrency(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Currency == "" {
+		req.Currency = "RUB"
+	}
+
 	balance, err := b.Repository.GetBalanceById(model.Id{Id: req.Id})
 	if err != nil {
 		SendErr(w, http.StatusBadRequest, err.Error())
