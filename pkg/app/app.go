@@ -4,7 +4,6 @@ import (
 	"AvitoTst/model"
 	"AvitoTst/pkg/handler"
 	"AvitoTst/pkg/repository"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 	"log"
@@ -13,7 +12,7 @@ import (
 
 func Run(path string) {
 	if err := initConfig(path); err != nil {
-		fmt.Printf("error initializaing configs: %s", err)
+		log.Printf("error initializaing configs: %s", err)
 		return
 	}
 
@@ -23,15 +22,13 @@ func Run(path string) {
 		Port:     viper.GetString("db.port"),
 		DBName:   viper.GetString("db.dbname"),
 		SSLMode:  viper.GetString("db.sslmode"),
-		Schema:   viper.GetString("db.schema"),
+		DBSchema: viper.GetString("db.dbschema"),
 		Password: viper.GetString("db.password"),
 	}
 
-	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s", DBSchema.Username, DBSchema.Password, DBSchema.DBName, DBSchema.SSLMode)
-
-	db, err := repository.New(connStr)
+	db, err := repository.New(DBSchema)
 	if err != nil {
-		fmt.Printf("Error create DB connection: %s", err)
+		log.Printf("Error create DB connection: %s", err)
 		return
 	}
 	defer db.DB.Close()
@@ -46,7 +43,7 @@ func Run(path string) {
 	r.HandleFunc("/getBalanceCurrency", hand.GetBalanceWithCurrency)
 
 	port := viper.GetString("port")
-	fmt.Printf("server started")
+	log.Printf("server started")
 	log.Fatal(http.ListenAndServe(port, r))
 }
 

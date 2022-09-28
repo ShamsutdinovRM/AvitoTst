@@ -8,13 +8,12 @@ services:
     environment:
       - POSTGRES_USER=dev
       - POSTGRES_PASSWORD=dev
-    restart: on-failure
 
-#  app:
-#    build: ./
-#    command: ./app
-#    restart: always
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      - postgres
+  app:
+    build: ./
+    command: ./app
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres

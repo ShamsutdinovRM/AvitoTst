@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -16,14 +17,14 @@ type Repos struct {
 func (b *Repos) Deposit(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("Error read body: %s\n", err)
+		log.Printf("Error read body: %s\n", err)
 		return
 	}
 	defer r.Body.Close()
 
 	var dep model.User
 	if err = json.Unmarshal(body, &dep); err != nil {
-		fmt.Printf("Error unmarshal body: %s\n", err)
+		log.Printf("Error unmarshal body: %s\n", err)
 		SendErr(w, http.StatusBadRequest, "Invalid field")
 		return
 	}
@@ -40,14 +41,14 @@ func (b *Repos) Deposit(w http.ResponseWriter, r *http.Request) {
 func (b *Repos) WriteOff(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("Error read body: %s\n", err)
+		log.Printf("Error read body: %s\n", err)
 		return
 	}
 	defer r.Body.Close()
 
 	var dep model.User
 	if err = json.Unmarshal(body, &dep); err != nil {
-		fmt.Printf("Error unmarshal body: %s\n", err)
+		log.Printf("Error unmarshal body: %s\n", err)
 		SendErr(w, http.StatusBadRequest, "Invalid field")
 		return
 	}
@@ -64,14 +65,14 @@ func (b *Repos) WriteOff(w http.ResponseWriter, r *http.Request) {
 func (b *Repos) Transfer(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("Error read body: %s\n", err)
+		log.Printf("Error read body: %s\n", err)
 		return
 	}
 	defer r.Body.Close()
 
 	var dep model.Transfer
 	if err = json.Unmarshal(body, &dep); err != nil {
-		fmt.Printf("Error unmarshal body: %s\n", err)
+		log.Printf("Error unmarshal body: %s\n", err)
 		SendErr(w, http.StatusBadRequest, "Invalid field")
 		return
 	}
@@ -88,14 +89,14 @@ func (b *Repos) Transfer(w http.ResponseWriter, r *http.Request) {
 func (b *Repos) GetBalance(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("Error read body: %s\n", err)
+		log.Printf("Error read body: %s\n", err)
 		return
 	}
 	defer r.Body.Close()
 
 	var dep model.Id
 	if err = json.Unmarshal(body, &dep); err != nil {
-		fmt.Printf("Error unmarshal body: %s\n", err)
+		log.Printf("Error unmarshal body: %s\n", err)
 		SendErr(w, http.StatusBadRequest, "Invalid field")
 		return
 	}
@@ -113,7 +114,7 @@ func (b *Repos) GetBalance(w http.ResponseWriter, r *http.Request) {
 func (b *Repos) GetBalanceWithCurrency(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("Error read body: %s\n", err)
+		log.Printf("Error read body: %s\n", err)
 		SendErr(w, http.StatusBadRequest, "Invalid field")
 		return
 	}
@@ -122,7 +123,7 @@ func (b *Repos) GetBalanceWithCurrency(w http.ResponseWriter, r *http.Request) {
 
 	var req model.BalanceReq
 	if err = json.Unmarshal(body, &req); err != nil {
-		fmt.Printf("Error unmarshal body: %s\n", err)
+		log.Printf("Error unmarshal body: %s\n", err)
 		SendErr(w, http.StatusBadRequest, "Invalid field")
 		return
 	}
@@ -152,7 +153,7 @@ func ChangeCurrency(dep model.BalanceCur) (model.BalanceCur, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		fmt.Printf("Error request: %s\n", err)
+		log.Printf("Error request: %s\n", err)
 		return model.BalanceCur{}, err
 	}
 
@@ -160,7 +161,7 @@ func ChangeCurrency(dep model.BalanceCur) (model.BalanceCur, error) {
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("Error Do request: %s\n", err)
+		log.Printf("Error Do request: %s\n", err)
 		return model.BalanceCur{}, err
 	}
 
@@ -168,13 +169,13 @@ func ChangeCurrency(dep model.BalanceCur) (model.BalanceCur, error) {
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Printf("Error read body: %s\n", err)
+		log.Printf("Error read body: %s\n", err)
 		return model.BalanceCur{}, err
 	}
 
 	var cur model.CurResponse
 	if err = json.Unmarshal(body, &cur); err != nil {
-		fmt.Printf("Error unmarshal body: %s\n", err)
+		log.Printf("Error unmarshal body: %s\n", err)
 		return model.BalanceCur{}, err
 	}
 

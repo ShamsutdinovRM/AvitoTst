@@ -6,6 +6,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	_ "github.com/shopspring/decimal"
+	"log"
 )
 
 type Operations interface {
@@ -19,14 +20,17 @@ type DBModel struct {
 	DB *sql.DB
 }
 
-func New(connStr string) (*DBModel, error) {
-	db, err := sql.Open("postgres", connStr)
+func New(cfg model.DB) (*DBModel, error) {
+	conn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.DBName, cfg.SSLMode)
+
+	log.Println(conn)
+	db, err := sql.Open(cfg.DBSchema, conn)
 	if err != nil {
-		fmt.Printf("Error open DB: %s", err)
+		log.Printf("Error open DB: %s", err)
 		return nil, err
 	}
 	if err = db.Ping(); err != nil {
-		fmt.Printf("Error Ping DB: %s", err)
+		log.Printf("Error Ping DB: %s", err)
 		return nil, err
 	}
 	return &DBModel{DB: db}, nil
