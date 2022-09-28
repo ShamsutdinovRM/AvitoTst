@@ -22,7 +22,7 @@ func Run(path string) {
 		Port:     viper.GetString("db.port"),
 		DBName:   viper.GetString("db.dbname"),
 		SSLMode:  viper.GetString("db.sslmode"),
-		DBSchema: viper.GetString("db.dbschema"),
+		Schema:   viper.GetString("db.schema"),
 		Password: viper.GetString("db.password"),
 	}
 

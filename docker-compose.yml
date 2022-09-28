@@ -1,13 +1,15 @@
 version: "3"
 services:
 
-  postgres:
-    image: postgres
+  db:
+    image: "postgres:14.1"
     ports:
       - "5432:5432"
     environment:
+      - POSTGRES_DB=postgres
       - POSTGRES_USER=dev
       - POSTGRES_PASSWORD=dev
+    restart: always
 
   app:
     build: ./
@@ -16,4 +18,4 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      - db

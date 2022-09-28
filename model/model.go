@@ -57,7 +57,7 @@ type DB struct {
 	Port     string `json:"port"`
 	DBName   string `json:"dbname"`
 	SSLMode  string `json:"sslmode"`
-	DBSchema string `json:"dbschema"`
+	Schema   string `json:"schema"`
 	Password string `json:"password"`
 }
 

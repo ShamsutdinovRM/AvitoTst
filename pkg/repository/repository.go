@@ -16,15 +16,17 @@ type Operations interface {
 	GetBalanceById(body model.Id) (model.User, error)
 }
 
+//DBModel connect to DB
 type DBModel struct {
 	DB *sql.DB
 }
 
+//New create new connect
 func New(cfg model.DB) (*DBModel, error) {
 	conn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.DBName, cfg.SSLMode)
 
 	log.Println(conn)
-	db, err := sql.Open(cfg.DBSchema, conn)
+	db, err := sql.Open(cfg.Schema, conn)
 	if err != nil {
 		log.Printf("Error open DB: %s", err)
 		return nil, err
@@ -36,6 +38,7 @@ func New(cfg model.DB) (*DBModel, error) {
 	return &DBModel{DB: db}, nil
 }
 
+//DepositMoney on balance user
 func (db *DBModel) DepositMoney(body model.User) (model.User, error) {
 
 	if body.Balance < 0.0 {
@@ -60,6 +63,7 @@ func (db *DBModel) DepositMoney(body model.User) (model.User, error) {
 	return actual, nil
 }
 
+//WriteOffMoney from balance user
 func (db *DBModel) WriteOffMoney(body model.User) (model.User, error) {
 
 	if body.Balance < 0.0 {
@@ -88,6 +92,7 @@ func (db *DBModel) WriteOffMoney(body model.User) (model.User, error) {
 	return actual, nil
 }
 
+// TransferMoney between users
 func (db *DBModel) TransferMoney(body model.Transfer) (model.Users, error) {
 
 	var actualUserWO model.User
@@ -113,6 +118,7 @@ func (db *DBModel) TransferMoney(body model.Transfer) (model.Users, error) {
 	return model.Users{UserWO: body.UserWO, UserDep: body.UserDep, Status: "Ok"}, nil
 }
 
+// GetBalanceById user
 func (db *DBModel) GetBalanceById(body model.Id) (model.User, error) {
 
 	rowUser := db.DB.QueryRow("SELECT balance FROM users WHERE id=$1 AND balance IS NOT NULL", body.Id)
